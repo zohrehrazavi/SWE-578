@@ -26,16 +26,3 @@ This project aims to develop a **hate speech detection** system for social media
   3. Benefits, Challenges, and Solutions  
   4. Conclusions (Maturity of the technology, open problems, future research)  
   5. Cited References (Full bibliographic details, no secondary references)  
----
-
-## 📌 TODO List  
-A detailed task tracker is maintained in **GitHub Issues**.  
-
-### **✅ To-Do List (GitHub Issues)**
-- [ ] **Create GitHub repository & README**  
-- [ ] **Submit acknowledgment email to Suzan Hoca**  
-- [ ] **Schedule & attend initial meeting**  
-- [ ] **Draft Work Plan (1 Page) – Due March 16**  
-- [ ] **Progress Report (2-3 Pages) – Due April 20**  
-- [ ] **Final Report (6 Pages) – Due May 18**  
-- [ ] **Submit Turnitin report for the final project**  
