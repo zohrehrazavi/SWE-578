@@ -1,7 +1,7 @@
 # Hate Speech Detection in Social Media - SWE 578  
 
 ## 📌 Project Overview  
-This project aims to develop a **hate speech detection** system for social media using machine learning and natural language processing (NLP).  
+This project aims to develop a **hate speech detection** system for social media
 
 ## 📅 Milestones & Deliverables  
 
