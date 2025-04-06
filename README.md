@@ -13,7 +13,7 @@ This project aims to develop a **hate speech detection** system for social media
 - 📆 **Deadline:** April 20, 2025, 23:59  
 - 📄 **Length:** Minimum 2-3 pages  
 - 📂 **File Format:** SWE577-Paper-Progress-2023F-Lastname-Name.pdf  
-- 📤 **Submission:** Upload to **GitHub** & **Turnitin**  
+- 📤 **Submission:** Upload to **GitHub**   
 
 ### ✅ Final Project  
 - 📆 **Deadline:** May 18, 2025, 23:59  
