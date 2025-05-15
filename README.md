@@ -2,6 +2,79 @@
 
 This application combines machine learning and rule-based approaches to detect and classify text as hateful, offensive, or neutral content.
 
+# Project: Hate Speech Detection System
+
+## 🧠 Algorithm Overview
+
+This system classifies social media text into three categories: **hateful**, **offensive**, or **neutral** using a hybrid rule-based and machine learning approach.
+
+### 🚀 Libraries Used:
+- **Scikit-learn (sklearn):** For TF-IDF feature extraction, model training (`MultinomialNB`, `LogisticRegression`), evaluation (`classification_report`, `confusion_matrix`).
+- **Imbalanced-learn (SMOTE):** To handle class imbalance by oversampling minority classes.
+- **NLTK:** For stopword removal and lemmatization during preprocessing.
+- **TQDM:** To show progress bars for long-running preprocessing or training steps.
+- **SciPy (softmax):** To normalize model probabilities.
+- **Flask:** To serve a web interface and API endpoint for real-time classification.
+
+## 🧹 Preprocessing Pipeline
+Implemented with `nltk` and custom regex logic:
+- Lowercase normalization
+- Removal of URLs, mentions, hashtags
+- Offensive word normalization (`f*ck` → `fuck`)
+- Stopword removal (preserving negations like "not", "never")
+- Lemmatization
+- Offensive term soft-mapping (e.g., `idiot` → `bad`)
+
+## 🧪 Machine Learning Models
+
+Two classifiers are trained and compared:
+- **Multinomial Naive Bayes** (with prior tuning)
+- **Logistic Regression** (with `class_weight='balanced'`, `C=0.3`, 2000 max iterations)
+
+Feature extraction is done using `TfidfVectorizer` with a vocabulary limit of 10,000.
+
+To combat class imbalance:
+- **SMOTE** is applied on the training set.
+
+## 🛡️ Hybrid Rule-Based + ML Classification Logic
+
+Before using the models, the system performs **rule-based checks**:
+- If protected group + hate indicators → classify as *hateful* directly with 90% confidence.
+- Explicit phrases like "kill all", "death to" → directly *hateful*
+- If rules don't trigger, fall back to model prediction
+- If model confidence < 40%, label as *neutral*
+- Final confidence is explained in output.
+
+## 🌐 Flask Interface
+
+Includes:
+- **HTML Form Submission** for user testing
+- **REST API** at `/classify` endpoint that accepts JSON input
+- Renders classification result, confidence score, and explanation
+- Error handling for missing/empty input
+
+## 🧪 Unit Tests
+
+Full suite of `unittest` cases test:
+- Preprocessing accuracy
+- Classification correctness (rule-based + ML)
+- Flask endpoints
+- Model consistency and edge cases (`None`, empty text, special characters)
+
+## 🔍 Example Use
+
+```json
+POST /classify
+{
+  "text": "I hate all immigrants and they should die!"
+}
+→ {
+  "classification": "hateful",
+  "confidence": "90.0%",
+  "explanation": "Rule-based classification with 90.0% confidence"
+}
+```
+
 ## Features
 
 - Text classification into three categories: hateful, offensive, and neutral
@@ -45,8 +118,11 @@ The model needs to be trained before running the web application. The training p
 
 To train the model, run:
 ```bash
+# Make sure you're in the project root directory
 python3 src/main.py
 ```
+
+Note: The command must be run from the project root directory, as the script expects to find the data directory and will save models in the correct location.
 
 This will:
 - Load the training data from `data/labeled_data.csv`
@@ -75,8 +151,8 @@ python3 app.py
 ```
 
 The application will be available at:
-- Web Interface: http://localhost:8080
-- API Endpoint: http://localhost:8080/classify
+- Web Interface: http://localhost:8081
+- API Endpoint: http://localhost:8081/classify
 
 ### API Usage
 
