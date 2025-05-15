@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tweet Classifier</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+            min-height: 100px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .neutral {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .offensive {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
+        .hateful {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .explanation {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .method-info {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #1565c0;
+        }
+        .confidence {
+            margin-top: 10px;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tweet Classifier</h1>
+        <div class="subtitle">
+            Using Machine Learning to Detect Harmful Content
+        </div>
+        <div class="method-info">
+            📝 This classifier uses TF-IDF (Term Frequency-Inverse Document Frequency) and 
+            Naive Bayes algorithm to analyze text patterns and identify potentially harmful content.
+            The model was trained on a dataset of labeled tweets.
+        </div>
+        <div class="input-group">
+            <textarea id="tweetInput" placeholder="Enter your tweet here..."></textarea>
+        </div>
+        <button onclick="classifyTweet()">Classify Tweet</button>
+        <div id="result"></div>
+        <div id="explanation" class="explanation" style="display: none;">
+            <strong>Why this classification?</strong>
+            <div id="explanationText"></div>
+            <div id="confidence"></div>
+        </div>
+    </div>
+
+    <script>
+        async function classifyTweet() {
+            const tweet = document.getElementById('tweetInput').value;
+            const resultDiv = document.getElementById('result');
+            const explanationDiv = document.getElementById('explanation');
+            const explanationText = document.getElementById('explanationText');
+            const confidenceDiv = document.getElementById('confidence');
+            
+            if (!tweet.trim()) {
+                alert('Please enter a tweet first!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/classify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ tweet: tweet })
+                });
+
+                const data = await response.json();
+                resultDiv.style.display = 'block';
+                explanationDiv.style.display = 'block';
+                
+                let className = '';
+                switch(data.classification) {
+                    case 'neutral':
+                        className = 'neutral';
+                        break;
+                    case 'offensive':
+                        className = 'offensive';
+                        break;
+                    case 'hateful':
+                        className = 'hateful';
+                        break;
+                }
+                
+                resultDiv.className = className;
+                resultDiv.textContent = `Classification: ${data.classification}`;
+                
+                // Display explanation
+                explanationText.innerHTML = data.explanation;
+                confidenceDiv.textContent = `Confidence: ${(data.confidence * 100).toFixed(1)}%`;
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while classifying the tweet.');
+            }
+        }
+    </script>
+</body>
+</html> 

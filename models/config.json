@@ -1,0 +1,8 @@
+{
+    "class_mapping": {
+        "0": "hateful",
+        "1": "offensive",
+        "2": "neutral"
+    },
+    "confidence_threshold": 0.3
+}
