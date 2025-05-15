@@ -3,172 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tweet Classifier</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            text-align: center;
-            color: #7f8c8d;
-            margin-bottom: 30px;
-            font-size: 0.9em;
-        }
-        .input-group {
-            margin-bottom: 20px;
-        }
-        textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            resize: vertical;
-            min-height: 100px;
-            font-size: 16px;
-        }
-        button {
-            background-color: #3498db;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        #result {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            display: none;
-        }
-        .neutral {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-        .offensive {
-            background-color: #fff3e0;
-            color: #ef6c00;
-        }
-        .hateful {
-            background-color: #ffebee;
-            color: #c62828;
-        }
-        .explanation {
-            margin-top: 15px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            font-size: 0.9em;
-            color: #666;
-        }
-        .method-info {
-            background-color: #e3f2fd;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 30px;
-            font-size: 0.9em;
-            color: #1565c0;
-        }
-        .confidence {
-            margin-top: 10px;
-            font-size: 0.9em;
-            font-style: italic;
-        }
-    </style>
+    <title>Hate Speech Detection</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Tweet Classifier</h1>
-        <div class="subtitle">
-            Using Machine Learning to Detect Harmful Content
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="mb-0">Hate Speech Detection System</h2>
+                        <button type="button" class="btn btn-link text-white" data-bs-toggle="modal" data-bs-target="#howItWorksModal">
+                            How it works?
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <form id="classificationForm" method="POST" action="{{ url_for('classify') }}">
+                            <div class="mb-3">
+                                <label for="text" class="form-label">Enter text to analyze:</label>
+                                <textarea class="form-control" id="text" name="text" rows="4" required></textarea>
+                                <div class="form-text">Enter any text or tweet to check if it contains hate speech or offensive content.</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Analyze</button>
+                        </form>
+
+                        {% if result %}
+                        <div class="mt-4">
+                            <div class="alert {% if result.classification == 'hateful' %}alert-danger{% elif result.classification == 'offensive' %}alert-warning{% else %}alert-success{% endif %}">
+                                <h4 class="alert-heading">Classification Result</h4>
+                                <p><strong>Text:</strong> {{ result.text }}</p>
+                                <p><strong>Classification:</strong> 
+                                    <span class="classification-result" 
+                                          data-bs-toggle="tooltip" 
+                                          data-bs-placement="right" 
+                                          title="{{ result.explanation }}">
+                                        {{ result.classification|title }}
+                                    </span>
+                                </p>
+                                <p><strong>Confidence:</strong> {{ result.confidence }}</p>
+                                <hr>
+                                <p class="mb-0"><em>{{ result.explanation }}</em></p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="method-info">
-            📝 This classifier uses TF-IDF (Term Frequency-Inverse Document Frequency) and 
-            Naive Bayes algorithm to analyze text patterns and identify potentially harmful content.
-            The model was trained on a dataset of labeled tweets.
-        </div>
-        <div class="input-group">
-            <textarea id="tweetInput" placeholder="Enter your tweet here..."></textarea>
-        </div>
-        <button onclick="classifyTweet()">Classify Tweet</button>
-        <div id="result"></div>
-        <div id="explanation" class="explanation" style="display: none;">
-            <strong>Why this classification?</strong>
-            <div id="explanationText"></div>
-            <div id="confidence"></div>
+    </div>
+
+    <!-- How it works modal -->
+    <div class="modal fade" id="howItWorksModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">How the Hate Speech Detection System Works</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Classification Categories:</h6>
+                    <ul>
+                        <li><strong>Hateful:</strong> Content that expresses hate towards protected groups or contains explicit threats</li>
+                        <li><strong>Offensive:</strong> Content that contains offensive language but isn't specifically hateful</li>
+                        <li><strong>Neutral:</strong> Normal, non-offensive content</li>
+                    </ul>
+
+                    <h6>How Classification Works:</h6>
+                    <ol>
+                        <li><strong>Text Processing:</strong> The system first cleans and processes the text, removing irrelevant parts while preserving important context.</li>
+                        <li><strong>Rule-Based Check:</strong> Checks for explicit hate speech indicators and protected group mentions.</li>
+                        <li><strong>Machine Learning:</strong> Uses trained models (Naive Bayes and Logistic Regression) to analyze the text patterns.</li>
+                        <li><strong>Confidence Score:</strong> Indicates how certain the system is about its classification.</li>
+                    </ol>
+
+                    <h6>Understanding Results:</h6>
+                    <ul>
+                        <li>High confidence (>80%): Strong indication of the classified category</li>
+                        <li>Medium confidence (40-80%): Moderate indication</li>
+                        <li>Low confidence (<40%): System is uncertain, may default to neutral</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        async function classifyTweet() {
-            const tweet = document.getElementById('tweetInput').value;
-            const resultDiv = document.getElementById('result');
-            const explanationDiv = document.getElementById('explanation');
-            const explanationText = document.getElementById('explanationText');
-            const confidenceDiv = document.getElementById('confidence');
+        // Enable tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        // Form submission handling
+        document.getElementById('classificationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            if (!tweet.trim()) {
-                alert('Please enter a tweet first!');
-                return;
-            }
+            // Show loading state
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            submitButton.innerHTML = 'Analyzing...';
+            submitButton.disabled = true;
 
-            try {
-                const response = await fetch('/classify', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ tweet: tweet })
+            fetch("{{ url_for('classify') }}", {
+                method: 'POST',
+                body: new FormData(this)
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Replace the entire content with the new HTML
+                document.documentElement.innerHTML = html;
+                // Re-initialize tooltips after content update
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl)
                 });
-
-                const data = await response.json();
-                resultDiv.style.display = 'block';
-                explanationDiv.style.display = 'block';
-                
-                let className = '';
-                switch(data.classification) {
-                    case 'neutral':
-                        className = 'neutral';
-                        break;
-                    case 'offensive':
-                        className = 'offensive';
-                        break;
-                    case 'hateful':
-                        className = 'hateful';
-                        break;
-                }
-                
-                resultDiv.className = className;
-                resultDiv.textContent = `Classification: ${data.classification}`;
-                
-                // Display explanation
-                explanationText.innerHTML = data.explanation;
-                confidenceDiv.textContent = `Confidence: ${(data.confidence * 100).toFixed(1)}%`;
-            } catch (error) {
+            })
+            .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred while classifying the tweet.');
-            }
-        }
+                alert('An error occurred while processing your request.');
+            })
+            .finally(() => {
+                // Reset button state
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+            });
+        });
     </script>
 </body>
 </html> 

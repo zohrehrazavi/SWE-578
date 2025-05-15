@@ -1,0 +1,64 @@
+.card {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background: linear-gradient(45deg, #1a73e8, #4285f4) !important;
+}
+
+.classification-result {
+    cursor: help;
+    border-bottom: 1px dotted;
+}
+
+.alert {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.btn-link {
+    text-decoration: none;
+}
+
+.btn-link:hover {
+    text-decoration: underline;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.modal-body h6 {
+    color: #1a73e8;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.modal-body h6:first-child {
+    margin-top: 0;
+}
+
+.modal-body ul, .modal-body ol {
+    margin-bottom: 1.5rem;
+}
+
+.modal-body li {
+    margin-bottom: 0.5rem;
+}
+
+/* Color coding for classifications */
+.alert-danger {
+    border-left: 5px solid #dc3545;
+}
+
+.alert-warning {
+    border-left: 5px solid #ffc107;
+}
+
+.alert-success {
+    border-left: 5px solid #28a745;
+} 
