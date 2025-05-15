@@ -22,8 +22,20 @@ Implemented with `nltk` and custom regex logic:
 - Removal of URLs, mentions, hashtags
 - Offensive word normalization (`f*ck` → `fuck`)
 - Stopword removal (preserving negations like "not", "never")
-- Lemmatization
+- Lemmatization (handling plural forms, e.g., "immigrants" → "immigrant")
 - Offensive term soft-mapping (e.g., `idiot` → `bad`)
+
+### Protected Groups Coverage
+The system recognizes various forms of protected groups including:
+- Religious groups (Muslims, Jews, Christians, etc.)
+- Ethnic and racial groups (Black, Asian, Hispanic, etc.)
+- Gender identities (Women, Transgender, Non-binary)
+- Sexual orientations (Gay, Lesbian, Queer)
+- Immigration status (Immigrants, Refugees)
+- Disabilities
+- Minorities
+
+All terms are lemmatized to catch both singular and plural forms.
 
 ## 🧪 Machine Learning Models
 
@@ -243,120 +255,3 @@ The application includes protection against:
 git clone <repository-url>
 cd <repository-name>
 ```
-
-2. Create and activate a virtual environment (recommended):
-```bash
-# On macOS/Linux
-python3 -m venv venv
-source venv/bin/activate
-
-# On Windows
-python -m venv venv
-.\venv\Scripts\activate
-```
-
-3. Install the required packages:
-```bash
-pip install -r requirements.txt
-```
-
-4. Download NLTK data (required for text processing):
-```python
-python3 -c "import nltk; nltk.download('stopwords')"
-```
-
-## Running the Application
-
-1. Start the Flask application:
-```bash
-python app.py
-```
-
-The application will:
-- Load the trained models
-- Start a web server on `http://localhost:8080`
-- Provide a REST API endpoint for classification
-
-2. Use the REST API:
-```bash
-# Health check
-curl http://localhost:8080/health
-
-# Classify text
-curl -X POST http://localhost:8080/classify \
-     -H "Content-Type: application/json" \
-     -d '{"tweet": "Your text here"}'
-```
-
-## API Documentation
-
-### GET /health
-
-Checks if the service is running and models are loaded properly.
-
-**Response Format:**
-```json
-{
-    "status": "healthy",
-    "models_loaded": true
-}
-```
-
-### POST /classify
-
-Classifies the provided text into one of three categories.
-
-**Request Format:**
-```json
-{
-    "tweet": "Text to classify"
-}
-```
-
-**Response Format:**
-```json
-{
-    "classification": "hateful|offensive|neutral",
-    "confidence": 0.95,
-    "explanation": "Classification confidence: 95%"
-}
-```
-
-**Status Codes:**
-- 200: Successful classification
-- 400: Invalid request (missing or null tweet field)
-- 500: Server error
-
-## Classification Logic
-
-The system uses a combination of approaches for classification:
-
-1. Rule-based Classification:
-   - Checks for protected groups and hate speech indicators
-   - Identifies offensive language patterns
-
-2. Machine Learning Models:
-   - Naive Bayes classifier
-   - Logistic Regression model
-   - TF-IDF vectorization for feature extraction
-
-3. Confidence Thresholds:
-   - High confidence threshold (0.8) for definitive classifications
-   - Lower threshold (0.3) for general classification
-   - Special handling for hate speech detection
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run the test suite
-5. Submit a pull request
-
-## License
-
-[Your License Here]
-
-## Contact
-
-[Your Contact Information]

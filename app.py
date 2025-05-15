@@ -1,3 +1,9 @@
+"""
+Hate Speech Detection Web Application
+----------------------------------
+Flask application providing both web interface and REST API for hate speech detection.
+"""
+
 from flask import Flask, request, jsonify, render_template
 import pickle
 import os
@@ -5,8 +11,11 @@ from src.main import classify_text_with_models
 
 app = Flask(__name__)
 
-# Load the models
 def load_models():
+    """
+    Load trained models from disk.
+    Returns (vectorizer, nb_model, lr_model) or (None, None, None) if loading fails.
+    """
     try:
         with open('models/naive_bayes.pkl', 'rb') as f:
             nb_model = pickle.load(f)
@@ -19,21 +28,47 @@ def load_models():
         print("Error: Model files not found. Please run 'python src/main.py' first to train the models.")
         return None, None, None
 
+# Load models at startup
 vectorizer, nb_model, lr_model = load_models()
 
 @app.route('/')
 def home():
+    """Render the home page with the classification form."""
     return render_template('index.html')
 
 @app.route('/classify', methods=['POST'])
 def classify():
+    """
+    Classify text endpoint - handles both form submissions and API calls.
+    
+    Form submission: Returns rendered template with results
+    API call: Returns JSON response
+    
+    Expected JSON format:
+    {
+        "text": "Text to classify"
+    }
+    
+    Returns:
+    {
+        "text": "Original text",
+        "classification": "hateful|offensive|neutral",
+        "confidence": "85.0%",
+        "explanation": "Classification explanation",
+        "metadata": {
+            "is_rule_based": bool,
+            "flagged_context": str|null,
+            "semantic_alert": bool
+        }
+    }
+    """
     # Check if models are loaded
     if None in (vectorizer, nb_model, lr_model):
         return jsonify({
             'error': 'Models not loaded. Please train models first using python src/main.py'
         }), 500
 
-    # Get the text from the request
+    # Get text from request
     if request.is_json:
         data = request.get_json()
         if not data or 'text' not in data:
@@ -55,7 +90,7 @@ def classify():
 
     # Classify the text
     try:
-        result, confidence, explanation = classify_text_with_models(
+        result, confidence, explanation, metadata = classify_text_with_models(
             text,
             vectorizer,
             nb_model,
@@ -66,14 +101,13 @@ def classify():
             'text': text,
             'classification': result,
             'confidence': f'{confidence:.1%}',
-            'explanation': explanation
+            'explanation': explanation,
+            'metadata': metadata
         }
 
-        # If it's a form submission, render the template with results
+        # Return appropriate response based on request type
         if not request.is_json:
             return render_template('index.html', result=response_data)
-        
-        # If it's an API call, return JSON
         return jsonify(response_data)
 
     except Exception as e:
@@ -82,8 +116,9 @@ def classify():
         }), 500
 
 if __name__ == '__main__':
-    # Create required directories if they don't exist
+    # Create required directories
     os.makedirs('static', exist_ok=True)
     os.makedirs('templates', exist_ok=True)
     
-    app.run(host='0.0.0.0', port=8081, debug=True) 
+    # Run the application
+    app.run(host='0.0.0.0', port=8082, debug=True) 

@@ -4,5 +4,5 @@
         "1": "offensive",
         "2": "neutral"
     },
-    "confidence_threshold": 0.4
+    "confidence_threshold": 0.5
 }
