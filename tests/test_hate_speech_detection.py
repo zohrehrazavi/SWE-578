@@ -70,21 +70,24 @@ class TestHateSpeechDetection(unittest.TestCase):
     def test_rule_based_classification(self):
         """Test rule-based classification logic"""
         test_cases = [
-            ("Muslims should die", 0, 0.9),  # Should detect as hateful
-            ("You're an idiot", 1, 0.8),  # Should detect as offensive
-            ("The weather is nice", None, None),  # Should defer to model
-            ("Kill all immigrants", 0, 0.9),  # Should detect as hateful
-            ("This is terrible", 1, 0.8),  # Should detect as offensive
+            ("Muslims should die", 0, 0.9, "protected_hate"),  # Should detect as hateful
+            ("You're an idiot", 1, 0.8, "offensive_only"),  # Should detect as offensive
+            ("The weather is nice", None, None, None),  # Should defer to model
+            ("Kill all immigrants", 0, 0.9, "death_threat"),  # Should detect as hateful
+            ("This is terrible", 1, 0.8, "offensive_only"),  # Should detect as offensive
         ]
         
-        for text, expected_class, expected_conf in test_cases:
+        for text, expected_class, expected_conf, expected_pattern in test_cases:
             words = set(preprocess(text).split())
-            pred_class, pred_conf = classify_text(text, words)
+            pred_class, pred_conf, pattern_type = classify_text(text, words)
             self.assertEqual(pred_class, expected_class,
                            f"Rule-based classification failed for '{text}'")
             if expected_conf is not None:
                 self.assertEqual(pred_conf, expected_conf,
                                f"Confidence score mismatch for '{text}'")
+            if expected_pattern is not None:
+                self.assertEqual(pattern_type, expected_pattern,
+                               f"Pattern type mismatch for '{text}'")
 
     def test_end_to_end_classification(self):
         """Test the complete classification pipeline"""
@@ -112,7 +115,7 @@ class TestHateSpeechDetection(unittest.TestCase):
         ]
         
         for case in test_cases:
-            result, confidence, _ = classify_text_with_models(
+            result, confidence, explanation, metadata = classify_text_with_models(
                 case["text"],
                 self.vectorizer,
                 self.nb_model,
@@ -129,6 +132,7 @@ class TestHateSpeechDetection(unittest.TestCase):
                 case["min_confidence"],
                 f"Confidence too low for '{case['text']}'"
             )
+            self.assertIsInstance(metadata, dict)
 
     def test_model_consistency(self):
         """Test if model predictions are consistent"""
@@ -137,7 +141,7 @@ class TestHateSpeechDetection(unittest.TestCase):
         # Get multiple predictions
         results = []
         for _ in range(5):
-            result, conf, _ = classify_text_with_models(
+            result, conf, explanation, metadata = classify_text_with_models(
                 text,
                 self.vectorizer,
                 self.nb_model,
@@ -172,7 +176,7 @@ class TestHateSpeechDetection(unittest.TestCase):
         
         for text in edge_cases:
             try:
-                result, conf, explanation = classify_text_with_models(
+                result, conf, explanation, metadata = classify_text_with_models(
                     text,
                     self.vectorizer,
                     self.nb_model,
@@ -182,6 +186,7 @@ class TestHateSpeechDetection(unittest.TestCase):
                 self.assertIsInstance(result, str)
                 self.assertIsInstance(conf, float)
                 self.assertIsInstance(explanation, str)
+                self.assertIsInstance(metadata, dict)
             except Exception as e:
                 self.fail(f"Failed to handle edge case '{text}': {str(e)}")
 

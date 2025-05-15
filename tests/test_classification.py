@@ -20,7 +20,7 @@ class TestClassification(unittest.TestCase):
     def test_neutral_classification(self):
         """Test classification of neutral text."""
         text = "The weather is beautiful today"
-        result, confidence, explanation = classify_text_with_models(
+        result, confidence, explanation, metadata = classify_text_with_models(
             text,
             self.vectorizer,
             self.nb_model,
@@ -31,11 +31,12 @@ class TestClassification(unittest.TestCase):
         self.assertGreater(confidence, 0)
         self.assertLess(confidence, 1)
         self.assertIsInstance(explanation, str)
+        self.assertIsInstance(metadata, dict)
 
     def test_hateful_classification(self):
         """Test classification of hateful text."""
         text = "death to all [protected_group]"  # Using explicit phrase that triggers rule-based classification
-        result, confidence, explanation = classify_text_with_models(
+        result, confidence, explanation, metadata = classify_text_with_models(
             text,
             self.vectorizer,
             self.nb_model,
@@ -46,11 +47,12 @@ class TestClassification(unittest.TestCase):
         self.assertGreater(confidence, 0)
         self.assertLess(confidence, 1)
         self.assertIsInstance(explanation, str)
+        self.assertIsInstance(metadata, dict)
 
     def test_offensive_classification(self):
         """Test classification of offensive text."""
         text = "You're a complete idiot"
-        result, confidence, explanation = classify_text_with_models(
+        result, confidence, explanation, metadata = classify_text_with_models(
             text,
             self.vectorizer,
             self.nb_model,
@@ -61,11 +63,12 @@ class TestClassification(unittest.TestCase):
         self.assertGreater(confidence, 0)
         self.assertLess(confidence, 1)
         self.assertIsInstance(explanation, str)
+        self.assertIsInstance(metadata, dict)
 
     def test_empty_text(self):
         """Test classification with empty text."""
         text = ""
-        result, confidence, explanation = classify_text_with_models(
+        result, confidence, explanation, metadata = classify_text_with_models(
             text,
             self.vectorizer,
             self.nb_model,
@@ -74,11 +77,12 @@ class TestClassification(unittest.TestCase):
         self.assertEqual(result, 'neutral')
         self.assertEqual(confidence, 1.0)
         self.assertEqual(explanation, "Empty or meaningless content")
+        self.assertIsInstance(metadata, dict)
 
     def test_none_text(self):
         """Test classification with None text."""
         text = None
-        result, confidence, explanation = classify_text_with_models(
+        result, confidence, explanation, metadata = classify_text_with_models(
             text,
             self.vectorizer,
             self.nb_model,
@@ -87,11 +91,12 @@ class TestClassification(unittest.TestCase):
         self.assertEqual(result, 'neutral')
         self.assertEqual(confidence, 1.0)
         self.assertEqual(explanation, "Empty or meaningless content")
+        self.assertIsInstance(metadata, dict)
 
     def test_special_characters(self):
         """Test classification with special characters."""
         text = "!@#$%^&*()"
-        result, confidence, explanation = classify_text_with_models(
+        result, confidence, explanation, metadata = classify_text_with_models(
             text,
             self.vectorizer,
             self.nb_model,
@@ -102,6 +107,7 @@ class TestClassification(unittest.TestCase):
         self.assertGreater(confidence, 0)
         self.assertLess(confidence, 1.1)  # Allow for floating point imprecision
         self.assertIn("confidence", explanation.lower())
+        self.assertIsInstance(metadata, dict)
 
 if __name__ == '__main__':
     unittest.main() 

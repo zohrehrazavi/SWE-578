@@ -268,6 +268,13 @@ def check_hate_speech_patterns(text, protected_groups):
     # Format protected groups for regex
     groups_pattern = '|'.join(protected_groups)
     
+    # First check for death threats with protected groups
+    death_phrases = ["death to", "kill all", "die all", "eliminate all", "remove all"]
+    if any(phrase in text for phrase in death_phrases):
+        # Check if any protected group is mentioned
+        if any(group.lower() in text for group in protected_groups):
+            return True, 0.9, "protected_hate"
+    
     # Check each pattern
     for pattern in COMPLEX_PATTERNS:
         # Replace {groups} placeholder with actual groups pattern
@@ -275,7 +282,7 @@ def check_hate_speech_patterns(text, protected_groups):
         if re.search(pattern, text, re.IGNORECASE):
             # Determine confidence based on pattern strength
             if "should" in text or "must" in text or "kill" in text or "die" in text:
-                return True, 0.9, "explicit_hate"
+                return True, 0.9, "protected_hate"
             elif any(word in text for word in ["cockroach", "vermin", "trash", "burden", "cancer", "threat"]):
                 return True, 0.85, "dehumanizing"
             elif any(phrase in text for phrase in ["don't deserve", "shouldn't exist", "don't belong", "taking our", "protect from"]):
@@ -342,6 +349,11 @@ def classify_text(text, words):
     if has_disclaimer:
         return 2, 0.7, disclaimer_type
     
+    # Check for explicit death threats or elimination first
+    death_phrases = ["death to", "kill all", "die all", "eliminate all", "remove all"]
+    if any(phrase in text_lower for phrase in death_phrases):
+        return 0, 0.9, "death_threat"  # Explicit death threats are hateful
+    
     # Check complex hate speech patterns
     is_hate_pattern, pattern_conf, pattern_type = check_hate_speech_patterns(text_lower, PROTECTED_GROUPS)
     if is_hate_pattern:
@@ -361,11 +373,6 @@ def classify_text(text, words):
             return 0, 0.85, "workplace_discrimination"  # Workplace discrimination
         elif any(word in words for word in ["exist", "real", "normal", "natural", "right"]):
             return 0, 0.85, "existence_denial"  # Existence denial
-    
-    # Check for explicit death threats or elimination
-    death_phrases = ["death to", "kill all", "die all", "eliminate all", "remove all"]
-    if any(phrase in text_lower for phrase in death_phrases):
-        return 0, 0.9, "death_threat"  # Explicit death threats are hateful
     
     # Check for offensive content
     if has_offensive:
@@ -391,12 +398,6 @@ def classify_text_with_models(text, tfidf_vectorizer, nb_model, lr_model):
         return "neutral", 1.0, "Empty or meaningless content", metadata
     
     text_lower = str(text).lower()
-    
-    # Check for context disclaimers
-    has_disclaimer, disclaimer_type = check_context_disclaimers(text_lower)
-    if has_disclaimer:
-        metadata["flagged_context"] = disclaimer_type
-        return "neutral", 0.7, f"Context disclaimer detected: {disclaimer_type}", metadata
     
     # Process the text
     processed = preprocess(text)
@@ -426,6 +427,15 @@ def classify_text_with_models(text, tfidf_vectorizer, nb_model, lr_model):
     # Use model with higher confidence
     prediction = nb_pred if nb_conf > lr_conf else lr_pred
     confidence = max(nb_conf, lr_conf)
+    
+    # Check for death threats or protected group hate speech
+    death_phrases = ["death to", "kill all", "die all", "eliminate all", "remove all"]
+    if any(phrase in text_lower for phrase in death_phrases):
+        # Check if any protected group is mentioned
+        if any(group.lower() in text_lower for group in PROTECTED_GROUPS):
+            metadata["is_rule_based"] = True
+            metadata["pattern_type"] = "death_threat"
+            return "hateful", 0.9, "Death threat against protected group detected", metadata
     
     # Confidence adjustments
     if confidence < CONFIDENCE_THRESHOLD:

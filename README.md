@@ -255,3 +255,61 @@ The application includes protection against:
 git clone <repository-url>
 cd <repository-name>
 ```
+
+## 🐳 Docker Deployment
+
+### Using Docker Compose (Recommended)
+
+1. Make sure you have Docker and Docker Compose installed
+2. Clone the repository:
+```bash
+git clone <repository-url>
+cd <repository-name>
+```
+
+3. Build and start the containers:
+```bash
+docker-compose up --build
+```
+
+The application will be available at `http://localhost:8082`
+
+### Using Docker Directly
+
+1. Build the Docker image:
+```bash
+docker build -t hate-speech-detection .
+```
+
+2. Run the container:
+```bash
+docker run -p 8082:8082 -v $(pwd)/models:/app/models -v $(pwd)/data:/app/data hate-speech-detection
+```
+
+### Environment Variables
+
+The following environment variables can be configured:
+
+- `FLASK_ENV`: Set to 'production' or 'development' (default: production)
+- `PORT`: Application port (default: 8082)
+
+### Docker Volumes
+
+The application uses two persistent volumes:
+- `./models`: For storing trained ML models
+- `./data`: For storing training and test data
+
+### Health Checks
+
+The Docker container includes health checks that:
+- Monitor the application every 30 seconds
+- Timeout after 10 seconds
+- Retry up to 3 times before marking container as unhealthy
+
+## 🚀 Deployment Best Practices
+
+1. Always use the production environment in deployment
+2. Ensure models are trained before deploying
+3. Monitor container health status
+4. Back up the models directory regularly
+5. Use proper logging and monitoring in production
