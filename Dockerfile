@@ -6,6 +6,7 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first to leverage Docker cache
@@ -15,11 +16,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Download NLTK data
 RUN python -c "import nltk; nltk.download('stopwords'); nltk.download('wordnet')"
 
-# Copy the rest of the application
-COPY . .
-
 # Create necessary directories
 RUN mkdir -p models static templates
+
+# Copy model files first to ensure they exist
+COPY models/*.pkl models/
+COPY models/config.json models/
+
+# Copy the rest of the application
+COPY . .
 
 # Set environment variables
 ENV FLASK_APP=app.py
