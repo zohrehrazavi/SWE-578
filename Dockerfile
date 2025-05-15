@@ -24,10 +24,17 @@ RUN mkdir -p models static templates
 # Set environment variables
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
-ENV PORT=8082
+
+# Note: We'll use Railway's PORT environment variable
+# Default to 8080 for local development
+ENV PORT=8080
 
 # Expose the port
-EXPOSE 8082
+EXPOSE ${PORT}
+
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/health || exit 1
 
 # Run the application
-CMD ["python", "app.py"] 
+CMD ["sh", "-c", "python app.py"] 

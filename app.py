@@ -115,10 +115,15 @@ def classify():
             'error': f'Classification failed: {str(e)}'
         }), 500
 
+@app.route('/health')
+def health_check():
+    return jsonify({"status": "healthy"}), 200
+
 if __name__ == '__main__':
     # Create required directories
     os.makedirs('static', exist_ok=True)
     os.makedirs('templates', exist_ok=True)
     
     # Run the application
-    app.run(host='0.0.0.0', port=8082, debug=True) 
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port, debug=False) 
